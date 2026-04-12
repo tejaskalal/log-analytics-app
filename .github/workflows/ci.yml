@@ -1,44 +1,74 @@
-
 name: CI Pipeline
 
 on:
   push:
     branches: ["main"]
 
+env:
+  DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+
 jobs:
   build:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-      # Build Backend Image
-      - name: Build Backend Image
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/backend ./backend
+    # SonarQube Scan
+    - name: SonarQube Scan
+      uses: sonarsource/sonarqube-scan-action@v2
+      with:
+        args: >
+          -Dsonar.projectKey=devops-project
+          -Dsonar.sources=.
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-      # Scan Image
-      - name: Scan Backend Image
-        run: trivy image ${{ secrets.DOCKERHUB_USERNAME }}/backend
+    # Quality Gate
+    - name: SonarQube Quality Gate
+      uses: sonarsource/sonarqube-quality-gate-action@v1
+      timeout-minutes: 5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      # Login DockerHub
-      - name: Docker Login
-        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+    # Docker Login
+    - name: Docker Login
+      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u $DOCKER_USER --password-stdin
 
-      # Push Image
-      - name: Push Backend Image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/backend
+    # Build Images
+    - name: Build Docker Images
+      run: |
+        docker build -t $DOCKER_USER/backend:${{ github.sha }} ./backend
+        docker build -t $DOCKER_USER/frontend:${{ github.sha }} ./frontend
+        docker build -t $DOCKER_USER/worker:${{ github.sha }} ./worker
 
-      # Update GitOps Repo
-      - name: Update Manifest Repo
-        run: |
-          git clone https://${{ secrets.GITOPS_REPO_TOKEN }}@github.com/tejaskalal/k8s-manifests.git
-          cd k8s-manifests
+    # Trivy Scan
+    - name: Trivy Scan Backend
+      run: |
+        trivy image --exit-code 0 --severity HIGH,CRITICAL $DOCKER_USER/backend:${{ github.sha }}
 
-          sed -i "s|image:.*backend.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest|" backend/deployment.yaml
+    # Push Images
+    - name: Push Docker Images
+      run: |
+        docker push $DOCKER_USER/backend:${{ github.sha }}
+        docker push $DOCKER_USER/frontend:${{ github.sha }}
+        docker push $DOCKER_USER/worker:${{ github.sha }}
 
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
+    # Clone GitOps Repo
+    - name: Clone GitOps Repo
+      run: |
+        git clone https://${{ secrets.GITOPS_REPO_TOKEN }}@github.com/tejaskalal/k8s-manifests.git
 
-          git commit -am "Update backend image"
-          git push
+    # Update Manifests
+    - name: Update Kubernetes Manifests
+      run: |
+        cd k8s-manifests
+        sed -i "s|image:.*backend.*|image: $DOCKER_USER/backend:${{ github.sha }}|" backend/deployment.yaml
+        sed -i "s|image:.*frontend.*|image: $DOCKER_USER/frontend:${{ github.sha }}|" frontend/deployment.yaml
+        sed -i "s|image:.*worker.*|image: $DOCKER_USER/worker:${{ github.sha }}|" worker/deployment.yaml
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git commit -am "Update images to ${{ github.sha }}"
+        git push
