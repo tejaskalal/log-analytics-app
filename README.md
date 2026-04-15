@@ -5,29 +5,15 @@ A DevOps-based log processing system using microservices (frontend, backend, wor
 <img width="6085" height="3440" alt="project-architecure" src="https://github.com/user-attachments/assets/49b218ef-5d0c-4d3a-aab6-da4f2d4d575e" />
 
 ## Tools & Technologies
-
-### DevOps & CI/CD
 - GitHub Actions
 - ArgoCD
-
-### Containerization & Registry
 - Docker
 - Docker Hub
-
-### Orchestration
 - Kubernetes
-
-### Cloud Platform
 - AWS (EKS, ALB, IAM , EC2 , VPC)
-
-### Monitoring & Observability
 - Prometheus
 - Grafana
-
-### Security & Code Quality
 - Trivy
 - SonarQube
-
-### Version Control
 - GitHub
 
