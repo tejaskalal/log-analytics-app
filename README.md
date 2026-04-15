@@ -36,5 +36,18 @@ The project is called Cloud-Native DevOps Platform for AI based Log Analytics be
 - Version Controlled Infrastructure & Manifests
 
 ### Project Results
+<img width="1841" height="1005" alt="Screenshot 2026-04-14 132641" src="https://github.com/user-attachments/assets/6a3df2b7-d3db-4be2-b915-8f7641ae3c4d" />
+
+<img width="1861" height="1009" alt="Screenshot 2026-04-14 132650" src="https://github.com/user-attachments/assets/dbe0a678-1965-4213-a169-3615ebc017e4" />
+
+<img width="1767" height="1005" alt="Screenshot 2026-04-14 133042" src="https://github.com/user-attachments/assets/ef29597a-13f2-4139-a1a6-beb806837789" />
+
+<img width="1862" height="856" alt="Screenshot 2026-04-14 133105" src="https://github.com/user-attachments/assets/6a7c77b7-4e72-464b-957a-6f8c49a33931" />
+
+<img width="1864" height="970" alt="Screenshot 2026-04-14 133154" src="https://github.com/user-attachments/assets/c6c476d6-0712-4bad-91d9-048296f425fc" />
+
+<img width="1856" height="855" alt="Screenshot 2026-04-15 230557" src="https://github.com/user-attachments/assets/ed52d95b-f8d3-4f1b-a17b-16478d2d07cb" />
+
+
 
 
